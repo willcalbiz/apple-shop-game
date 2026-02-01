@@ -1,0 +1,936 @@
+/* === 🍎 사과 가게 v3 - 프로급 UI === */
+
+:root {
+  /* 색상 시스템 */
+  --color-success: #22C55E;
+  --color-success-light: #4ADE80;
+  --color-success-dark: #16A34A;
+  
+  --color-gold: #FACC15;
+  --color-gold-light: #FDE047;
+  --color-gold-dark: #CA8A04;
+  
+  --color-danger: #EF4444;
+  --color-danger-dark: #DC2626;
+  
+  --color-info: #3B82F6;
+  --color-info-dark: #2563EB;
+  
+  /* 사과 테마 */
+  --color-apple-red: #E74C3C;
+  --color-apple-red-dark: #C0392B;
+  --color-leaf-green: #27AE60;
+  
+  /* 배경 */
+  --bg-primary: #FDF6E3;
+  --bg-secondary: #F5E6D3;
+  --bg-card: #FFFFFF;
+  --bg-dark: #8B7355;
+  
+  /* 텍스트 */
+  --text-primary: #2D2D2D;
+  --text-secondary: #666666;
+  --text-light: #FFFFFF;
+  
+  /* 폰트 */
+  --font-primary: 'Nunito', sans-serif;
+  --font-numbers: 'Poppins', sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-primary);
+  background: var(--bg-dark);
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+/* === 게임 컨테이너 === */
+.game-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #FFE4B5 0%, #FDF6E3 50%, #DEB887 100%);
+  position: relative;
+}
+
+/* === 상단 바 === */
+.top-bar {
+  background: linear-gradient(180deg, #6B5344 0%, #8B7355 100%);
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 100;
+}
+
+.top-bar::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+}
+
+.day-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.day-text {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--text-light);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.time-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #FFE4B5;
+}
+
+.currency-display {
+  display: flex;
+  gap: 8px;
+}
+
+.currency-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+  border-radius: 16px;
+  border: 2px solid rgba(255,255,255,0.15);
+}
+
+.currency-icon {
+  font-size: 20px;
+}
+
+.currency-value {
+  font-family: var(--font-numbers);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-light);
+  min-width: 60px;
+  text-align: right;
+}
+
+.currency-value.positive {
+  color: #90EE90;
+}
+
+.currency-value.warning {
+  color: #FFD700;
+}
+
+.currency-value.danger {
+  color: #FF6B6B;
+}
+
+/* === 게임 영역 === */
+.game-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* === 가게 영역 === */
+.shop-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  position: relative;
+}
+
+.shop-building {
+  position: relative;
+  width: 280px;
+}
+
+/* 지붕 */
+.shop-roof {
+  width: 320px;
+  height: 80px;
+  margin-left: -20px;
+  background: linear-gradient(180deg, #E74C3C 0%, #C0392B 100%);
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.shop-roof::after {
+  content: '';
+  position: absolute;
+  top: 30%;
+  left: 20%;
+  right: 20%;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+}
+
+/* 건물 본체 */
+.shop-body {
+  background: linear-gradient(180deg, #FFF8DC 0%, #F5DEB3 100%);
+  border: 4px solid #8B7355;
+  border-top: none;
+  border-radius: 0 0 20px 20px;
+  padding: 20px;
+  box-shadow: 
+    0 8px 24px rgba(0,0,0,0.2),
+    inset 0 2px 4px rgba(255,255,255,0.5);
+}
+
+/* 간판 */
+.shop-sign {
+  background: linear-gradient(180deg, #27AE60 0%, #1E8449 100%);
+  border-radius: 12px;
+  padding: 10px 24px;
+  margin: -40px auto 16px;
+  width: fit-content;
+  box-shadow: 
+    0 4px 12px rgba(0,0,0,0.3),
+    inset 0 2px 4px rgba(255,255,255,0.2);
+  border: 3px solid #155D38;
+}
+
+.shop-sign-text {
+  font-size: 22px;
+  font-weight: 900;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* 진열대 */
+.display-stand {
+  background: linear-gradient(180deg, #DEB887 0%, #CD853F 100%);
+  border-radius: 12px;
+  padding: 12px;
+  border: 3px solid #8B7355;
+  min-height: 80px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+}
+
+.apple-item {
+  width: 36px;
+  height: 36px;
+  background: radial-gradient(circle at 30% 30%, #FF6B6B, #E74C3C, #C0392B);
+  border-radius: 50% 50% 50% 50% / 45% 45% 55% 55%;
+  position: relative;
+  box-shadow: 
+    inset -4px -4px 8px rgba(0,0,0,0.2),
+    inset 4px 4px 8px rgba(255,255,255,0.3),
+    0 2px 4px rgba(0,0,0,0.2);
+  animation: apple-bounce 0.3s ease-out;
+}
+
+.apple-item::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 8px;
+  background: linear-gradient(180deg, #5D4037, #8B7355);
+  border-radius: 2px;
+}
+
+.apple-item::after {
+  content: '';
+  position: absolute;
+  top: -8px;
+  right: 8px;
+  width: 12px;
+  height: 8px;
+  background: linear-gradient(135deg, #4CAF50, #2E7D32);
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  transform: rotate(30deg);
+}
+
+@keyframes apple-bounce {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.apple-count-badge {
+  background: linear-gradient(180deg, #E74C3C 0%, #C0392B 100%);
+  color: white;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 12px;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* 가격표 */
+.price-tag {
+  position: absolute;
+  top: 60px;
+  right: -10px;
+  background: linear-gradient(180deg, #FFF8DC 0%, #FFE4B5 100%);
+  border: 3px solid #DAA520;
+  border-radius: 8px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transform: rotate(5deg);
+}
+
+.price-tag-value {
+  font-family: var(--font-numbers);
+  font-size: 18px;
+  font-weight: 800;
+  color: #8B4513;
+}
+
+/* === 손님 영역 === */
+.customer-area {
+  padding: 16px;
+  min-height: 180px;
+}
+
+.customer-area-label {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #8B7355;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.customer-area-label::before,
+.customer-area-label::after {
+  content: '';
+  height: 2px;
+  width: 40px;
+  background: linear-gradient(90deg, transparent, #8B7355, transparent);
+}
+
+.customer-queue {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* 손님 카드 */
+.customer-card {
+  background: linear-gradient(180deg, #FFFFFF 0%, #F8F8F8 100%);
+  border-radius: 16px;
+  padding: 12px;
+  width: 70px;
+  box-shadow: 
+    0 4px 12px rgba(0,0,0,0.15),
+    inset 0 2px 4px rgba(255,255,255,0.8);
+  border: 2px solid #E0E0E0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.customer-card:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.customer-card.happy {
+  border-color: #4CAF50;
+}
+
+.customer-card.neutral {
+  border-color: #FFC107;
+}
+
+.customer-card.angry {
+  border-color: #F44336;
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.customer-avatar {
+  font-size: 32px;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.customer-mood {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  font-size: 16px;
+  background: white;
+  border-radius: 50%;
+  padding: 2px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.customer-order {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #333;
+}
+
+.customer-patience {
+  margin-top: 6px;
+  height: 6px;
+  background: #E0E0E0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.customer-patience-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50, #8BC34A);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.customer-patience-bar.warning {
+  background: linear-gradient(90deg, #FFC107, #FF9800);
+}
+
+.customer-patience-bar.danger {
+  background: linear-gradient(90deg, #F44336, #E91E63);
+}
+
+/* === 하단 버튼 영역 === */
+.action-bar {
+  background: linear-gradient(180deg, #F5E6D3 0%, #E8D5C4 100%);
+  padding: 16px;
+  border-top: 3px solid #D4C4A8;
+}
+
+/* 가격 조절 패널 */
+.price-control {
+  background: white;
+  border-radius: 16px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.price-control-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #666;
+}
+
+.price-control-value {
+  font-family: var(--font-numbers);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-apple-red);
+  min-width: 80px;
+  text-align: center;
+}
+
+.price-btn {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 12px;
+  font-size: 20px;
+  font-weight: 800;
+  color: white;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.price-btn-minus {
+  background: linear-gradient(180deg, #EF4444 0%, #DC2626 100%);
+  border-bottom: 3px solid #B91C1C;
+}
+
+.price-btn-plus {
+  background: linear-gradient(180deg, #22C55E 0%, #16A34A 100%);
+  border-bottom: 3px solid #15803D;
+}
+
+.price-btn:active {
+  transform: translateY(2px);
+  border-bottom-width: 1px;
+}
+
+/* 액션 버튼 그리드 */
+.action-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+/* 3D 버튼 */
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%);
+  border-radius: 16px 16px 0 0;
+}
+
+.action-btn:active {
+  transform: translateY(3px);
+}
+
+.action-btn-buy {
+  background: linear-gradient(180deg, #22C55E 0%, #16A34A 100%);
+  border-bottom: 4px solid #15803D;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
+}
+
+.action-btn-buy:active {
+  border-bottom-width: 1px;
+  box-shadow: 0 2px 6px rgba(34, 197, 94, 0.3);
+}
+
+.action-btn-ledger {
+  background: linear-gradient(180deg, #3B82F6 0%, #2563EB 100%);
+  border-bottom: 4px solid #1D4ED8;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.action-btn-upgrade {
+  background: linear-gradient(180deg, #A855F7 0%, #9333EA 100%);
+  border-bottom: 4px solid #7C3AED;
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4);
+}
+
+.action-btn-next {
+  background: linear-gradient(180deg, #F59E0B 0%, #D97706 100%);
+  border-bottom: 4px solid #B45309;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+.action-btn-icon {
+  font-size: 24px;
+}
+
+.action-btn-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+/* === 모달 === */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fade-in 0.2s ease;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-panel {
+  background: linear-gradient(180deg, #FFFFFF 0%, #F8F8F8 100%);
+  border-radius: 24px;
+  width: 90%;
+  max-width: 340px;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  position: relative;
+  animation: modal-enter 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modal-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-close {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #EF4444 0%, #DC2626 100%);
+  border: 3px solid white;
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* === 피드백 효과 === */
+.floating-text {
+  position: absolute;
+  font-family: var(--font-numbers);
+  font-size: 24px;
+  font-weight: 800;
+  pointer-events: none;
+  animation: float-up 1.2s ease-out forwards;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  z-index: 500;
+}
+
+.floating-text.positive {
+  color: #22C55E;
+}
+
+.floating-text.negative {
+  color: #EF4444;
+}
+
+@keyframes float-up {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-60px) scale(1.2);
+  }
+}
+
+/* 동전 파티클 */
+.coin-particle {
+  position: absolute;
+  font-size: 24px;
+  pointer-events: none;
+  z-index: 500;
+}
+
+/* === 타이틀 화면 === */
+.title-screen {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #FFE4B5 0%, #FDF6E3 50%, #DEB887 100%);
+  padding: 40px 20px;
+}
+
+.title-logo {
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle at 30% 30%, #FF6B6B, #E74C3C, #C0392B);
+  border-radius: 50% 50% 50% 50% / 45% 45% 55% 55%;
+  position: relative;
+  box-shadow: 
+    inset -8px -8px 20px rgba(0,0,0,0.2),
+    inset 8px 8px 20px rgba(255,255,255,0.3),
+    0 10px 30px rgba(0,0,0,0.3);
+  animation: logo-bounce 2s ease-in-out infinite;
+  margin-bottom: 30px;
+}
+
+.title-logo::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 16px;
+  background: linear-gradient(180deg, #5D4037, #8B7355);
+  border-radius: 4px;
+}
+
+.title-logo::after {
+  content: '';
+  position: absolute;
+  top: -14px;
+  right: 20px;
+  width: 24px;
+  height: 16px;
+  background: linear-gradient(135deg, #4CAF50, #2E7D32);
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  transform: rotate(30deg);
+}
+
+@keyframes logo-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+.title-text {
+  font-size: 42px;
+  font-weight: 900;
+  color: #C0392B;
+  text-shadow: 
+    0 4px 8px rgba(0,0,0,0.2),
+    0 2px 0 #8B4513;
+  margin-bottom: 8px;
+}
+
+.title-subtitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #8B7355;
+  margin-bottom: 40px;
+}
+
+.start-btn {
+  background: linear-gradient(180deg, #E74C3C 0%, #C0392B 100%);
+  border: none;
+  border-bottom: 5px solid #922B21;
+  border-radius: 20px;
+  padding: 18px 48px;
+  font-family: var(--font-primary);
+  font-size: 22px;
+  font-weight: 900;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(231, 76, 60, 0.5);
+  transition: all 0.1s ease;
+  animation: pulse-glow 2s infinite;
+}
+
+.start-btn:active {
+  transform: translateY(4px);
+  border-bottom-width: 1px;
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 8px 24px rgba(231, 76, 60, 0.5); }
+  50% { box-shadow: 0 8px 32px rgba(231, 76, 60, 0.8); }
+}
+
+.title-hint {
+  margin-top: 30px;
+  background: rgba(255,255,255,0.8);
+  border-radius: 16px;
+  padding: 16px 24px;
+  text-align: center;
+}
+
+.title-hint-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  line-height: 1.6;
+}
+
+/* === 일일 결산 모달 === */
+.summary-modal {
+  background: linear-gradient(180deg, #FFF8DC 0%, #FFE4B5 100%);
+  border: 4px solid #DAA520;
+}
+
+.summary-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.summary-day {
+  font-size: 16px;
+  font-weight: 700;
+  color: #8B7355;
+}
+
+.summary-title {
+  font-size: 28px;
+  font-weight: 900;
+  color: #8B4513;
+}
+
+.summary-card {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #EEE;
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #666;
+}
+
+.summary-value {
+  font-family: var(--font-numbers);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.summary-value.positive {
+  color: #22C55E;
+}
+
+.summary-value.negative {
+  color: #EF4444;
+}
+
+.summary-profit {
+  text-align: center;
+  padding: 16px;
+  background: linear-gradient(180deg, #22C55E 0%, #16A34A 100%);
+  border-radius: 16px;
+  margin-bottom: 16px;
+}
+
+.summary-profit.loss {
+  background: linear-gradient(180deg, #EF4444 0%, #DC2626 100%);
+}
+
+.summary-profit-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.8);
+  margin-bottom: 4px;
+}
+
+.summary-profit-value {
+  font-family: var(--font-numbers);
+  font-size: 32px;
+  font-weight: 800;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.summary-next-btn {
+  width: 100%;
+  background: linear-gradient(180deg, #F59E0B 0%, #D97706 100%);
+  border: none;
+  border-bottom: 4px solid #B45309;
+  border-radius: 16px;
+  padding: 16px;
+  font-family: var(--font-primary);
+  font-size: 18px;
+  font-weight: 800;
+  color: white;
+  cursor: pointer;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.summary-next-btn:active {
+  transform: translateY(3px);
+  border-bottom-width: 1px;
+}
+
+/* === 축하 효과 === */
+.confetti {
+  position: fixed;
+  top: -20px;
+  font-size: 24px;
+  pointer-events: none;
+  z-index: 2000;
+  animation: confetti-fall 3s linear forwards;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
