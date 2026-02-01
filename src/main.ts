@@ -21,7 +21,8 @@ class AppleShopGame {
         <div class="title-hint">
           <div class="title-hint-text">
             🍎 사과를 매입하고 판매하며<br>
-            📊 회계의 기초를 배워보세요!
+            📊 회계의 기초를 배워보세요!<br>
+            <small style="color:#999;">v4.0 - 튜토리얼 & 목표 시스템</small>
           </div>
         </div>
       </div>
@@ -33,9 +34,13 @@ class AppleShopGame {
 
   private startGame() {
     this.isPlaying = true;
+    gameState.reset();
     this.renderGameScreen();
     this.setupEventListeners();
     this.startGameLoop();
+    
+    // 튜토리얼 시작
+    setTimeout(() => this.showTutorialStep(), 500);
   }
 
   private renderGameScreen() {
@@ -56,16 +61,32 @@ class AppleShopGame {
             <div class="currency-item">
               <span class="currency-icon">💰</span>
               <span class="currency-value ${this.getCashClass(state.cash)}" id="cash-display">
-                ${this.formatNumber(state.cash)}원
+                ${this.formatNumber(state.cash)}
               </span>
             </div>
             <div class="currency-item">
               <span class="currency-icon">🍎</span>
               <span class="currency-value ${this.getAppleClass(state.apples)}" id="apple-display">
-                ${state.apples}개
+                ${state.apples}
               </span>
             </div>
           </div>
+        </div>
+
+        <!-- 날씨 & 목표 바 -->
+        <div class="info-bar">
+          <div class="weather-badge" id="weather-badge">
+            ${state.weather.description}
+          </div>
+          <div class="goal-badge ${state.dailyGoal?.completed ? 'completed' : ''}" id="goal-badge">
+            🎯 목표: ${this.formatNumber(state.dailyGoal?.current || 0)} / ${this.formatNumber(state.dailyGoal?.target || 0)}원
+            ${state.dailyGoal?.completed ? '✅' : ''}
+          </div>
+        </div>
+
+        <!-- 콤보 표시 -->
+        <div class="combo-display ${state.combo >= 2 ? 'active' : ''}" id="combo-display">
+          ${state.combo >= 2 ? `🔥 ${state.combo} COMBO!` : ''}
         </div>
 
         <!-- 게임 영역 -->
@@ -77,6 +98,7 @@ class AppleShopGame {
               <div class="shop-body">
                 <div class="shop-sign">
                   <span class="shop-sign-text">🍎 사과 가게</span>
+                  ${state.shopLevel > 1 ? `<span class="shop-level">Lv.${state.shopLevel}</span>` : ''}
                 </div>
                 <div class="display-stand" id="apple-display-stand">
                   ${this.renderApples(state.apples)}
@@ -100,7 +122,7 @@ class AppleShopGame {
         <!-- 하단 액션 바 -->
         <div class="action-bar">
           <!-- 가격 조절 -->
-          <div class="price-control">
+          <div class="price-control" id="price-control">
             <span class="price-control-label">판매가</span>
             <button class="price-btn price-btn-minus" id="price-minus">−</button>
             <span class="price-control-value" id="price-value">₩${state.applePrice}</span>
@@ -128,6 +150,9 @@ class AppleShopGame {
             </button>
           </div>
         </div>
+
+        <!-- 튜토리얼 오버레이 -->
+        <div class="tutorial-overlay" id="tutorial-overlay" style="display:none;"></div>
       </div>
     `;
   }
@@ -136,49 +161,133 @@ class AppleShopGame {
     // 가격 조절
     document.getElementById('price-minus')?.addEventListener('click', () => {
       const state = gameState.getState();
-      const newPrice = Math.max(200, state.applePrice - 50);
-      gameState.setPrice(newPrice);
+      gameState.setPrice(state.applePrice - 50);
       this.updatePriceDisplay();
     });
 
     document.getElementById('price-plus')?.addEventListener('click', () => {
       const state = gameState.getState();
-      const newPrice = Math.min(1000, state.applePrice + 50);
-      gameState.setPrice(newPrice);
+      gameState.setPrice(state.applePrice + 50);
       this.updatePriceDisplay();
     });
 
-    // 매입 버튼
+    // 버튼들
     document.getElementById('btn-buy')?.addEventListener('click', () => this.showBuyModal());
-
-    // 장부 버튼
     document.getElementById('btn-ledger')?.addEventListener('click', () => this.showLedgerModal());
-
-    // 업그레이드 버튼
     document.getElementById('btn-upgrade')?.addEventListener('click', () => this.showUpgradeModal());
-
-    // 다음 버튼
     document.getElementById('btn-next')?.addEventListener('click', () => this.handleNext());
 
-    // 게임 상태 구독
+    // 상태 구독
     gameState.subscribe(() => this.updateUI());
   }
 
   private startGameLoop() {
-    // 손님 생성
-    setInterval(() => {
+    // 손님 생성 (2.5초마다)
+    window.setInterval(() => {
       if (!this.isPlaying) return;
       const state = gameState.getState();
-      if (state.timeOfDay === 'noon' && Math.random() < 0.3) {
+      if (state.timeOfDay === 'noon') {
         gameState.generateCustomer();
       }
     }, 2500);
 
-    // 인내심 감소
-    setInterval(() => {
+    // 인내심 감소 (1.5초마다)
+    window.setInterval(() => {
       if (!this.isPlaying) return;
-      gameState.decreasePatience();
+      const state = gameState.getState();
+      if (state.timeOfDay === 'noon') {
+        const lostAny = gameState.decreasePatience();
+        if (lostAny) {
+          this.showFloatingText('손님이 떠났어요 😢', false, 'center');
+        }
+      }
     }, 1500);
+  }
+
+  private showTutorialStep() {
+    const state = gameState.getState();
+    if (state.tutorialCompleted) return;
+
+    const overlay = document.getElementById('tutorial-overlay');
+    if (!overlay) return;
+
+    const tutorials = [
+      {
+        message: '🍎 사과 가게에 오신 걸 환영해요!<br><br>사과를 사서 팔아 돈을 벌어보세요.<br>회계의 기초를 배울 수 있어요!',
+        highlight: null,
+        buttonText: '시작하기',
+      },
+      {
+        message: '🛒 먼저 <b>매입</b> 버튼을 눌러<br>사과를 구매하세요!<br><br>원가 200원에 사서<br>비싸게 팔면 이익이에요.',
+        highlight: 'btn-buy',
+        buttonText: '알겠어요',
+      },
+      {
+        message: '⏭️ <b>다음</b> 버튼을 눌러<br>낮(영업시간)으로 넘어가세요!<br><br>손님이 찾아올 거예요.',
+        highlight: 'btn-next',
+        buttonText: '알겠어요',
+      },
+      {
+        message: '👆 손님 카드를 <b>터치</b>하면<br>사과를 판매할 수 있어요!<br><br>손님이 떠나기 전에 빨리!',
+        highlight: 'customer-queue',
+        buttonText: '알겠어요',
+      },
+      {
+        message: '🎯 매일 <b>목표 매출</b>을 달성하면<br>보너스를 받아요!<br><br>🔥 연속 판매하면 <b>콤보 보너스</b>도!',
+        highlight: 'goal-badge',
+        buttonText: '시작!',
+      },
+    ];
+
+    const step = state.tutorialStep;
+    if (step >= tutorials.length) {
+      overlay.style.display = 'none';
+      gameState.advanceTutorial();
+      return;
+    }
+
+    const tutorial = tutorials[step];
+
+    // 하이라이트
+    if (tutorial.highlight) {
+      const target = document.getElementById(tutorial.highlight);
+      if (target) {
+        target.classList.add('tutorial-highlight');
+      }
+    }
+
+    overlay.style.display = 'flex';
+    overlay.innerHTML = `
+      <div class="tutorial-bubble">
+        <div class="tutorial-message">${tutorial.message}</div>
+        <button class="tutorial-btn" id="tutorial-next">${tutorial.buttonText}</button>
+        <button class="tutorial-skip" id="tutorial-skip">튜토리얼 건너뛰기</button>
+      </div>
+    `;
+
+    document.getElementById('tutorial-next')?.addEventListener('click', () => {
+      // 하이라이트 제거
+      document.querySelectorAll('.tutorial-highlight').forEach(el => {
+        el.classList.remove('tutorial-highlight');
+      });
+      
+      gameState.advanceTutorial();
+      
+      const newState = gameState.getState();
+      if (newState.tutorialStep < tutorials.length) {
+        this.showTutorialStep();
+      } else {
+        overlay.style.display = 'none';
+      }
+    });
+
+    document.getElementById('tutorial-skip')?.addEventListener('click', () => {
+      document.querySelectorAll('.tutorial-highlight').forEach(el => {
+        el.classList.remove('tutorial-highlight');
+      });
+      overlay.style.display = 'none';
+      gameState.skipTutorial();
+    });
   }
 
   private updateUI() {
@@ -188,14 +297,21 @@ class AppleShopGame {
     // 현금
     const cashEl = document.getElementById('cash-display');
     if (cashEl) {
-      cashEl.textContent = `${this.formatNumber(state.cash)}원`;
-      cashEl.className = `currency-value ${this.getCashClass(state.cash)}`;
+      const oldValue = parseInt(cashEl.textContent?.replace(/[^0-9]/g, '') || '0');
+      const newValue = state.cash;
+      cashEl.textContent = this.formatNumber(newValue);
+      cashEl.className = `currency-value ${this.getCashClass(newValue)}`;
+      
+      if (newValue > oldValue) {
+        cashEl.classList.add('bump');
+        setTimeout(() => cashEl.classList.remove('bump'), 300);
+      }
     }
 
     // 사과
     const appleEl = document.getElementById('apple-display');
     if (appleEl) {
-      appleEl.textContent = `${state.apples}개`;
+      appleEl.textContent = String(state.apples);
       appleEl.className = `currency-value ${this.getAppleClass(state.apples)}`;
     }
 
@@ -205,7 +321,7 @@ class AppleShopGame {
       standEl.innerHTML = this.renderApples(state.apples);
     }
 
-    // 손님 대기열
+    // 손님
     const queueEl = document.getElementById('customer-queue');
     if (queueEl) {
       queueEl.innerHTML = this.renderCustomers(queue);
@@ -220,14 +336,37 @@ class AppleShopGame {
     if (timeBadge) {
       timeBadge.innerHTML = `${this.getTimeIcon(state.timeOfDay)} ${this.getTimeName(state.timeOfDay)}`;
     }
+
+    // 날씨
+    const weatherBadge = document.getElementById('weather-badge');
+    if (weatherBadge) {
+      weatherBadge.textContent = state.weather.description;
+    }
+
+    // 목표
+    const goalBadge = document.getElementById('goal-badge');
+    if (goalBadge && state.dailyGoal) {
+      goalBadge.innerHTML = `🎯 목표: ${this.formatNumber(state.dailyGoal.current)} / ${this.formatNumber(state.dailyGoal.target)}원 ${state.dailyGoal.completed ? '✅' : ''}`;
+      goalBadge.className = `goal-badge ${state.dailyGoal.completed ? 'completed' : ''}`;
+    }
+
+    // 콤보
+    const comboDisplay = document.getElementById('combo-display');
+    if (comboDisplay) {
+      if (state.combo >= 2) {
+        comboDisplay.innerHTML = `🔥 ${state.combo} COMBO!`;
+        comboDisplay.className = 'combo-display active';
+      } else {
+        comboDisplay.innerHTML = '';
+        comboDisplay.className = 'combo-display';
+      }
+    }
   }
 
   private updatePriceDisplay() {
     const state = gameState.getState();
-    
     const priceValue = document.getElementById('price-value');
     if (priceValue) priceValue.textContent = `₩${state.applePrice}`;
-
     const priceTag = document.getElementById('price-tag');
     if (priceTag) priceTag.textContent = `₩${state.applePrice}`;
   }
@@ -246,14 +385,29 @@ class AppleShopGame {
     const result = gameState.sellToCustomer(customerId);
     
     if (result.success) {
-      this.showFloatingText(`+₩${this.formatNumber(result.revenue)}`, true);
+      // 판매 성공
+      let text = `+₩${this.formatNumber(result.revenue)}`;
+      if (result.tip > 0) {
+        text += ` (+팁!)`;
+      }
+      this.showFloatingText(text, true);
       this.showCoinEffect();
+      
+      // 콤보 효과
+      if (result.isCombo) {
+        this.showComboEffect(result.combo);
+      }
+      
+      // 메시지
+      this.showCustomerMessage(result.message, true);
     } else {
+      // 실패
       this.showFloatingText(result.message, false);
+      this.showCustomerMessage(result.message, false);
     }
   }
 
-  private showFloatingText(text: string, positive: boolean) {
+  private showFloatingText(text: string, positive: boolean, position: string = 'center') {
     const gameArea = this.container.querySelector('.game-area');
     if (!gameArea) return;
 
@@ -261,7 +415,7 @@ class AppleShopGame {
     floater.className = `floating-text ${positive ? 'positive' : 'negative'}`;
     floater.textContent = text;
     floater.style.left = '50%';
-    floater.style.top = '40%';
+    floater.style.top = position === 'center' ? '30%' : '50%';
     floater.style.transform = 'translateX(-50%)';
     gameArea.appendChild(floater);
 
@@ -272,17 +426,36 @@ class AppleShopGame {
     const gameArea = this.container.querySelector('.game-area');
     if (!gameArea) return;
 
-    const emojis = ['💰', '💵', '✨'];
-    for (let i = 0; i < 5; i++) {
+    const emojis = ['💰', '💵', '✨', '🪙'];
+    for (let i = 0; i < 6; i++) {
       const coin = document.createElement('div');
       coin.className = 'coin-particle';
       coin.textContent = emojis[Math.floor(Math.random() * emojis.length)];
       coin.style.left = `${40 + Math.random() * 20}%`;
       coin.style.top = '50%';
-      coin.style.animation = `float-up 1s ease-out ${i * 0.1}s forwards`;
+      coin.style.animation = `float-up 1s ease-out ${i * 0.08}s forwards`;
       gameArea.appendChild(coin);
       setTimeout(() => coin.remove(), 1200);
     }
+  }
+
+  private showComboEffect(_combo: number) {
+    const comboDisplay = document.getElementById('combo-display');
+    if (comboDisplay) {
+      comboDisplay.classList.add('pulse');
+      setTimeout(() => comboDisplay.classList.remove('pulse'), 500);
+    }
+  }
+
+  private showCustomerMessage(message: string, positive: boolean) {
+    const queueArea = this.container.querySelector('.customer-area');
+    if (!queueArea) return;
+
+    const bubble = document.createElement('div');
+    bubble.className = `customer-message ${positive ? 'positive' : 'negative'}`;
+    bubble.textContent = message;
+    queueArea.appendChild(bubble);
+    setTimeout(() => bubble.remove(), 2000);
   }
 
   private handleNext() {
@@ -292,6 +465,12 @@ class AppleShopGame {
       this.showSummaryModal(result.summary);
     } else {
       this.updateUI();
+      
+      // 튜토리얼 체크
+      const state = gameState.getState();
+      if (!state.tutorialCompleted && state.tutorialStep === 2 && state.timeOfDay === 'noon') {
+        setTimeout(() => this.showTutorialStep(), 500);
+      }
     }
   }
 
@@ -308,22 +487,23 @@ class AppleShopGame {
         <div class="modal-title">🛒 도매상 매입</div>
         
         <div style="text-align:center;margin-bottom:20px;">
-          <div style="font-size:60px;margin-bottom:8px;">🍎</div>
-          <div style="color:#666;">개당 ₩${state.appleCost}</div>
+          <div class="modal-apple-icon"></div>
+          <div style="color:#666;margin-top:8px;">개당 <b>₩${state.appleCost}</b></div>
         </div>
 
         <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:20px;">
           <button class="price-btn price-btn-minus" id="modal-qty-minus">−</button>
-          <span id="modal-qty" style="font-family:var(--font-numbers);font-size:32px;font-weight:800;color:#E74C3C;min-width:80px;text-align:center;">${quantity}개</span>
+          <span id="modal-qty" style="font-family:var(--font-numbers);font-size:36px;font-weight:800;color:#E74C3C;min-width:100px;text-align:center;">${quantity}개</span>
           <button class="price-btn price-btn-plus" id="modal-qty-plus">+</button>
         </div>
 
         <div style="text-align:center;margin-bottom:20px;">
           <div style="font-size:14px;color:#666;margin-bottom:4px;">합계</div>
-          <div id="modal-total" style="font-family:var(--font-numbers);font-size:24px;font-weight:700;color:#333;">₩${this.formatNumber(quantity * state.appleCost)}</div>
+          <div id="modal-total" style="font-family:var(--font-numbers);font-size:28px;font-weight:700;color:#333;">₩${this.formatNumber(quantity * state.appleCost)}</div>
+          <div style="font-size:12px;color:#999;margin-top:4px;">보유: ₩${this.formatNumber(state.cash)}</div>
         </div>
 
-        <button id="modal-buy-btn" style="width:100%;background:linear-gradient(180deg,#22C55E 0%,#16A34A 100%);border:none;border-bottom:4px solid #15803D;border-radius:16px;padding:16px;font-family:var(--font-primary);font-size:18px;font-weight:800;color:white;cursor:pointer;">🛒 구매하기</button>
+        <button id="modal-buy-btn" class="modal-primary-btn">🛒 구매하기</button>
       </div>
     `;
 
@@ -350,6 +530,7 @@ class AppleShopGame {
     document.getElementById('modal-buy-btn')?.addEventListener('click', () => {
       gameState.buyApples(quantity);
       modal.remove();
+      this.showFloatingText(`🍎 ${quantity}개 구매!`, true);
     });
 
     modal.querySelector('.modal-close')?.addEventListener('click', () => modal.remove());
@@ -368,51 +549,47 @@ class AppleShopGame {
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
     modal.innerHTML = `
-      <div class="modal-panel" style="max-height:80vh;overflow-y:auto;">
+      <div class="modal-panel" style="max-height:85vh;overflow-y:auto;">
         <button class="modal-close">✕</button>
         <div class="modal-title">📒 장부</div>
         
-        <div style="background:linear-gradient(180deg,#22C55E 0%,#16A34A 100%);border-radius:16px;padding:16px;margin-bottom:16px;text-align:center;">
-          <div style="color:rgba(255,255,255,0.8);font-size:14px;margin-bottom:4px;">현금 잔고</div>
-          <div style="font-family:var(--font-numbers);font-size:28px;font-weight:800;color:white;">₩${this.formatNumber(state.cash)}</div>
+        <div class="ledger-cash-card">
+          <div class="ledger-cash-label">현금 잔고</div>
+          <div class="ledger-cash-value">₩${this.formatNumber(state.cash)}</div>
         </div>
 
-        <div style="margin-bottom:16px;">
-          <div style="font-weight:700;color:#8B7355;margin-bottom:8px;">📋 오늘의 거래</div>
-          <div style="background:#F8F8F8;border-radius:12px;padding:12px;">
-            ${todayTx.length === 0 ? '<div style="color:#999;text-align:center;">아직 거래가 없습니다</div>' :
-              todayTx.slice(-5).map(t => `
-                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #EEE;">
-                  <span style="font-size:14px;color:#666;">${t.description}</span>
-                  <span style="font-family:var(--font-numbers);font-weight:700;color:${t.type === 'income' ? '#22C55E' : '#EF4444'};">
-                    ${t.type === 'income' ? '+' : '-'}₩${this.formatNumber(t.amount)}
-                  </span>
+        <div class="ledger-section">
+          <div class="ledger-section-title">📋 오늘의 거래</div>
+          <div class="ledger-transactions">
+            ${todayTx.length === 0 ? '<div class="ledger-empty">아직 거래가 없습니다</div>' :
+              todayTx.slice(-6).map(t => `
+                <div class="ledger-tx-row">
+                  <span class="ledger-tx-desc">${t.description}</span>
+                  <span class="ledger-tx-amount ${t.type}">${t.type === 'income' ? '+' : '-'}₩${this.formatNumber(t.amount)}</span>
                 </div>
               `).join('')
             }
           </div>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div style="background:#F0FFF4;border-radius:12px;padding:12px;text-align:center;">
-            <div style="font-size:12px;color:#666;">오늘 매출</div>
-            <div style="font-family:var(--font-numbers);font-size:18px;font-weight:700;color:#22C55E;">+₩${this.formatNumber(todayIncome)}</div>
+        <div class="ledger-summary">
+          <div class="ledger-summary-item income">
+            <div class="ledger-summary-label">오늘 매출</div>
+            <div class="ledger-summary-value">+₩${this.formatNumber(todayIncome)}</div>
           </div>
-          <div style="background:#FEF2F2;border-radius:12px;padding:12px;text-align:center;">
-            <div style="font-size:12px;color:#666;">오늘 비용</div>
-            <div style="font-family:var(--font-numbers);font-size:18px;font-weight:700;color:#EF4444;">-₩${this.formatNumber(todayExpense)}</div>
-          </div>
-        </div>
-
-        <div style="margin-top:16px;background:${todayProfit >= 0 ? '#F0FFF4' : '#FEF2F2'};border-radius:12px;padding:16px;text-align:center;">
-          <div style="font-size:14px;color:#666;">오늘 순이익</div>
-          <div style="font-family:var(--font-numbers);font-size:24px;font-weight:800;color:${todayProfit >= 0 ? '#22C55E' : '#EF4444'};">
-            ${todayProfit >= 0 ? '+' : ''}₩${this.formatNumber(todayProfit)}
+          <div class="ledger-summary-item expense">
+            <div class="ledger-summary-label">오늘 비용</div>
+            <div class="ledger-summary-value">-₩${this.formatNumber(todayExpense)}</div>
           </div>
         </div>
 
-        <div style="margin-top:16px;background:#FFF8DC;border:2px solid #DAA520;border-radius:12px;padding:12px;text-align:center;">
-          <div style="font-size:13px;color:#8B7355;">💡 순이익 = 매출 - 비용</div>
+        <div class="ledger-profit ${todayProfit >= 0 ? 'positive' : 'negative'}">
+          <div class="ledger-profit-label">오늘 순이익</div>
+          <div class="ledger-profit-value">${todayProfit >= 0 ? '+' : ''}₩${this.formatNumber(todayProfit)}</div>
+        </div>
+
+        <div class="ledger-tip">
+          💡 순이익 = 매출 - 비용
         </div>
       </div>
     `;
@@ -436,16 +613,17 @@ class AppleShopGame {
         <button class="modal-close">✕</button>
         <div class="modal-title">⬆️ 가게 업그레이드</div>
         
-        <div style="text-align:center;margin-bottom:20px;">
-          <div style="font-size:60px;margin-bottom:8px;">🏪</div>
-          <div style="font-size:18px;font-weight:700;">현재 레벨: ${state.shopLevel}</div>
+        <div style="text-align:center;margin:20px 0;">
+          <div style="font-size:64px;">🏪</div>
+          <div style="font-size:20px;font-weight:700;margin-top:8px;">현재 레벨: ${state.shopLevel}</div>
+          <div style="color:#666;margin-top:4px;">업그레이드하면 평판이 더 빨리 올라요!</div>
         </div>
 
         <div style="text-align:center;margin-bottom:20px;color:#666;">
-          업그레이드 비용: ₩${this.formatNumber(cost)}
+          업그레이드 비용: <b>₩${this.formatNumber(cost)}</b>
         </div>
 
-        <button id="modal-upgrade-btn" style="width:100%;background:linear-gradient(180deg,${canAfford ? '#A855F7' : '#CCC'} 0%,${canAfford ? '#9333EA' : '#AAA'} 100%);border:none;border-bottom:4px solid ${canAfford ? '#7C3AED' : '#999'};border-radius:16px;padding:16px;font-family:var(--font-primary);font-size:18px;font-weight:800;color:white;cursor:${canAfford ? 'pointer' : 'not-allowed'};">
+        <button class="modal-primary-btn ${canAfford ? '' : 'disabled'}" id="modal-upgrade-btn">
           ${canAfford ? '⬆️ 업그레이드!' : '💸 자금 부족'}
         </button>
       </div>
@@ -457,6 +635,7 @@ class AppleShopGame {
       document.getElementById('modal-upgrade-btn')?.addEventListener('click', () => {
         gameState.upgradeShop();
         modal.remove();
+        this.showFloatingText('🏪 업그레이드 완료!', true);
       });
     }
 
@@ -474,14 +653,24 @@ class AppleShopGame {
     modal.innerHTML = `
       <div class="modal-panel summary-modal">
         <div class="summary-header">
+          <div class="summary-weather">${summary.weather.description}</div>
           <div class="summary-day">Day ${summary.day} 결산</div>
           <div class="summary-title">${isProfit ? '🎉 수고했어요!' : '😢 힘내세요!'}</div>
+          ${summary.isNewRecord ? '<div class="summary-record">🏆 신기록!</div>' : ''}
         </div>
 
         <div class="summary-card">
           <div class="summary-row">
             <span class="summary-label">🍎 판매량</span>
             <span class="summary-value">${summary.sales}개</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">👥 손님</span>
+            <span class="summary-value">${summary.customersServed}명 응대 / ${summary.customersLost}명 이탈</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">🔥 최대 콤보</span>
+            <span class="summary-value">${summary.maxCombo}x</span>
           </div>
           <div class="summary-row">
             <span class="summary-label">💵 매출</span>
@@ -497,11 +686,14 @@ class AppleShopGame {
             <span class="summary-value negative">${summary.spoiledApples}개</span>
           </div>
           ` : ''}
-          <div class="summary-row">
-            <span class="summary-label">👥 손님</span>
-            <span class="summary-value">${summary.customersServed}명 응대 / ${summary.customersLost}명 이탈</span>
-          </div>
         </div>
+
+        ${summary.goalCompleted ? `
+        <div class="summary-goal-reward">
+          <div>🎯 목표 달성 보너스!</div>
+          <div class="summary-goal-amount">+₩${this.formatNumber(summary.goalReward)}</div>
+        </div>
+        ` : ''}
 
         <div class="summary-profit ${isProfit ? '' : 'loss'}">
           <div class="summary-profit-label">순이익</div>
@@ -514,7 +706,7 @@ class AppleShopGame {
 
     this.container.appendChild(modal);
 
-    if (isProfit) {
+    if (isProfit || summary.goalCompleted || summary.isNewRecord) {
       this.showConfetti();
     }
 
@@ -525,13 +717,14 @@ class AppleShopGame {
   }
 
   private showConfetti() {
-    const emojis = ['🎉', '✨', '💰', '⭐', '🍎', '🎊'];
-    for (let i = 0; i < 20; i++) {
+    const emojis = ['🎉', '✨', '💰', '⭐', '🍎', '🎊', '🏆'];
+    for (let i = 0; i < 25; i++) {
       const confetti = document.createElement('div');
       confetti.className = 'confetti';
       confetti.textContent = emojis[Math.floor(Math.random() * emojis.length)];
       confetti.style.left = `${Math.random() * 100}%`;
       confetti.style.animationDelay = `${Math.random() * 2}s`;
+      confetti.style.animationDuration = `${2 + Math.random() * 2}s`;
       document.body.appendChild(confetti);
       setTimeout(() => confetti.remove(), 5000);
     }
@@ -541,7 +734,7 @@ class AppleShopGame {
 
   private renderApples(count: number): string {
     if (count === 0) {
-      return '<div style="color:#999;font-size:14px;">재고 없음</div>';
+      return '<div class="empty-stand">재고 없음<br><small>매입 버튼을 눌러주세요</small></div>';
     }
     
     const displayCount = Math.min(count, 12);
@@ -560,19 +753,35 @@ class AppleShopGame {
 
   private renderCustomers(customers: Customer[]): string {
     if (customers.length === 0) {
-      return '<div style="color:#999;font-size:14px;">손님을 기다리는 중...</div>';
+      const state = gameState.getState();
+      if (state.timeOfDay === 'noon') {
+        return '<div class="empty-queue">손님을 기다리는 중... ⏳</div>';
+      } else if (state.timeOfDay === 'morning') {
+        return '<div class="empty-queue">아침이에요! 먼저 사과를 매입하세요 🛒</div>';
+      } else {
+        return '<div class="empty-queue">영업 종료! 내일을 기다려요 🌙</div>';
+      }
     }
 
-    return customers.map(c => `
-      <div class="customer-card ${c.mood}" data-id="${c.id}">
-        <div class="customer-avatar">${c.emoji}</div>
-        <div class="customer-mood">${this.getMoodEmoji(c.mood)}</div>
-        <div class="customer-order">🍎×${c.quantity}</div>
-        <div class="customer-patience">
-          <div class="customer-patience-bar ${this.getPatienceClass(c.patience)}" style="width:${c.patience}%"></div>
+    return customers.map(c => {
+      const typeClass = c.type !== 'normal' ? `customer-${c.type}` : '';
+      const typeBadge = c.type === 'regular' ? '<span class="customer-type-badge regular">단골</span>' :
+                       c.type === 'bulk' ? '<span class="customer-type-badge bulk">대량</span>' :
+                       c.type === 'picky' ? '<span class="customer-type-badge picky">까다로움</span>' : '';
+      
+      return `
+        <div class="customer-card ${c.mood} ${typeClass}" data-id="${c.id}">
+          ${typeBadge}
+          <div class="customer-avatar">${c.emoji}</div>
+          <div class="customer-mood">${this.getMoodEmoji(c.mood)}</div>
+          <div class="customer-order">🍎×${c.quantity}</div>
+          ${c.tip > 0 ? '<div class="customer-tip-hint">💕</div>' : ''}
+          <div class="customer-patience">
+            <div class="customer-patience-bar ${this.getPatienceClass(c.patience)}" style="width:${c.patience}%"></div>
+          </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   }
 
   private getMoodEmoji(mood: string): string {

@@ -934,3 +934,540 @@ html, body {
     opacity: 0;
   }
 }
+
+/* === 정보 바 (날씨 & 목표) === */
+.info-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: linear-gradient(180deg, rgba(139,115,85,0.1) 0%, transparent 100%);
+  gap: 8px;
+}
+
+.weather-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: #666;
+  padding: 6px 12px;
+  background: rgba(255,255,255,0.8);
+  border-radius: 12px;
+}
+
+.goal-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: #8B7355;
+  padding: 6px 12px;
+  background: rgba(255,255,255,0.8);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.goal-badge.completed {
+  background: linear-gradient(180deg, #4ADE80 0%, #22C55E 100%);
+  color: white;
+  animation: goal-complete 0.5s ease;
+}
+
+@keyframes goal-complete {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* === 콤보 표시 === */
+.combo-display {
+  text-align: center;
+  height: 32px;
+  line-height: 32px;
+  font-size: 18px;
+  font-weight: 900;
+  color: #FF6B35;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.combo-display.active {
+  opacity: 1;
+  animation: combo-pulse 0.5s ease;
+}
+
+.combo-display.pulse {
+  animation: combo-pulse 0.3s ease;
+}
+
+@keyframes combo-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
+
+/* === 튜토리얼 === */
+.tutorial-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.tutorial-bubble {
+  background: white;
+  border-radius: 24px;
+  padding: 28px;
+  max-width: 320px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  animation: tutorial-enter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes tutorial-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.tutorial-message {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #333;
+  margin-bottom: 24px;
+}
+
+.tutorial-btn {
+  background: linear-gradient(180deg, #E74C3C 0%, #C0392B 100%);
+  border: none;
+  border-bottom: 4px solid #922B21;
+  border-radius: 16px;
+  padding: 14px 32px;
+  font-family: var(--font-primary);
+  font-size: 18px;
+  font-weight: 800;
+  color: white;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.tutorial-btn:active {
+  transform: translateY(3px);
+  border-bottom-width: 1px;
+}
+
+.tutorial-skip {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.tutorial-skip:hover {
+  color: #666;
+}
+
+.tutorial-highlight {
+  position: relative;
+  z-index: 2001;
+  animation: highlight-pulse 1s ease-in-out infinite;
+}
+
+@keyframes highlight-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.5); }
+  50% { box-shadow: 0 0 0 8px rgba(231, 76, 60, 0.3); }
+}
+
+/* === 손님 유형 배지 === */
+.customer-type-badge {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.customer-type-badge.regular {
+  background: linear-gradient(180deg, #FFD700 0%, #FFA500 100%);
+  color: #8B4513;
+}
+
+.customer-type-badge.bulk {
+  background: linear-gradient(180deg, #9B59B6 0%, #8E44AD 100%);
+  color: white;
+}
+
+.customer-type-badge.picky {
+  background: linear-gradient(180deg, #E74C3C 0%, #C0392B 100%);
+  color: white;
+}
+
+.customer-tip-hint {
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+/* === 손님 메시지 === */
+.customer-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 12px 20px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  animation: message-pop 2s ease forwards;
+  z-index: 100;
+}
+
+.customer-message.positive {
+  border: 2px solid #22C55E;
+  color: #22C55E;
+}
+
+.customer-message.negative {
+  border: 2px solid #E74C3C;
+  color: #E74C3C;
+}
+
+@keyframes message-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  85% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -70%) scale(0.9);
+  }
+}
+
+/* === 빈 상태 === */
+.empty-stand {
+  color: #999;
+  font-size: 14px;
+  text-align: center;
+  padding: 20px;
+}
+
+.empty-stand small {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #BBB;
+}
+
+.empty-queue {
+  color: #999;
+  font-size: 14px;
+  text-align: center;
+  padding: 20px;
+}
+
+/* === 가게 레벨 === */
+.shop-level {
+  display: block;
+  font-size: 12px;
+  color: rgba(255,255,255,0.8);
+  margin-top: 4px;
+}
+
+/* === 장부 모달 스타일 === */
+.ledger-cash-card {
+  background: linear-gradient(180deg, #22C55E 0%, #16A34A 100%);
+  border-radius: 16px;
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.ledger-cash-label {
+  font-size: 14px;
+  color: rgba(255,255,255,0.8);
+  margin-bottom: 4px;
+}
+
+.ledger-cash-value {
+  font-family: var(--font-numbers);
+  font-size: 28px;
+  font-weight: 800;
+  color: white;
+}
+
+.ledger-section {
+  margin-bottom: 16px;
+}
+
+.ledger-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #8B7355;
+  margin-bottom: 8px;
+}
+
+.ledger-transactions {
+  background: #F8F8F8;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.ledger-empty {
+  color: #999;
+  text-align: center;
+  padding: 12px;
+}
+
+.ledger-tx-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #EEE;
+}
+
+.ledger-tx-row:last-child {
+  border-bottom: none;
+}
+
+.ledger-tx-desc {
+  font-size: 13px;
+  color: #666;
+}
+
+.ledger-tx-amount {
+  font-family: var(--font-numbers);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ledger-tx-amount.income {
+  color: #22C55E;
+}
+
+.ledger-tx-amount.expense {
+  color: #E74C3C;
+}
+
+.ledger-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.ledger-summary-item {
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+}
+
+.ledger-summary-item.income {
+  background: #F0FFF4;
+}
+
+.ledger-summary-item.expense {
+  background: #FEF2F2;
+}
+
+.ledger-summary-label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.ledger-summary-value {
+  font-family: var(--font-numbers);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.ledger-summary-item.income .ledger-summary-value {
+  color: #22C55E;
+}
+
+.ledger-summary-item.expense .ledger-summary-value {
+  color: #E74C3C;
+}
+
+.ledger-profit {
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.ledger-profit.positive {
+  background: #F0FFF4;
+}
+
+.ledger-profit.negative {
+  background: #FEF2F2;
+}
+
+.ledger-profit-label {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.ledger-profit-value {
+  font-family: var(--font-numbers);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.ledger-profit.positive .ledger-profit-value {
+  color: #22C55E;
+}
+
+.ledger-profit.negative .ledger-profit-value {
+  color: #E74C3C;
+}
+
+.ledger-tip {
+  background: #FFF8DC;
+  border: 2px solid #DAA520;
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  font-size: 13px;
+  color: #8B7355;
+}
+
+/* === 모달 공통 === */
+.modal-primary-btn {
+  width: 100%;
+  background: linear-gradient(180deg, #22C55E 0%, #16A34A 100%);
+  border: none;
+  border-bottom: 4px solid #15803D;
+  border-radius: 16px;
+  padding: 16px;
+  font-family: var(--font-primary);
+  font-size: 18px;
+  font-weight: 800;
+  color: white;
+  cursor: pointer;
+}
+
+.modal-primary-btn:active {
+  transform: translateY(3px);
+  border-bottom-width: 1px;
+}
+
+.modal-primary-btn.disabled {
+  background: linear-gradient(180deg, #CCC 0%, #AAA 100%);
+  border-bottom-color: #999;
+  cursor: not-allowed;
+}
+
+.modal-apple-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto;
+  background: radial-gradient(circle at 30% 30%, #FF6B6B, #E74C3C, #C0392B);
+  border-radius: 50% 50% 50% 50% / 45% 45% 55% 55%;
+  position: relative;
+  box-shadow: 
+    inset -8px -8px 16px rgba(0,0,0,0.2),
+    inset 8px 8px 16px rgba(255,255,255,0.3),
+    0 4px 8px rgba(0,0,0,0.2);
+}
+
+.modal-apple-icon::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 12px;
+  background: linear-gradient(180deg, #5D4037, #8B7355);
+  border-radius: 3px;
+}
+
+.modal-apple-icon::after {
+  content: '';
+  position: absolute;
+  top: -14px;
+  right: 15px;
+  width: 18px;
+  height: 12px;
+  background: linear-gradient(135deg, #4CAF50, #2E7D32);
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  transform: rotate(30deg);
+}
+
+/* === 일일 결산 개선 === */
+.summary-weather {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.summary-record {
+  display: inline-block;
+  background: linear-gradient(180deg, #FFD700 0%, #FFA500 100%);
+  color: #8B4513;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 6px 16px;
+  border-radius: 20px;
+  margin-top: 8px;
+  animation: record-shine 1s ease-in-out infinite;
+}
+
+@keyframes record-shine {
+  0%, 100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.8); }
+}
+
+.summary-goal-reward {
+  background: linear-gradient(180deg, #FFF8DC 0%, #FFE4B5 100%);
+  border: 2px solid #DAA520;
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  margin-bottom: 16px;
+  font-weight: 700;
+  color: #8B4513;
+}
+
+.summary-goal-amount {
+  font-family: var(--font-numbers);
+  font-size: 20px;
+  color: #22C55E;
+  margin-top: 4px;
+}
+
+/* === 숫자 애니메이션 === */
+.currency-value.bump {
+  animation: value-bump 0.3s ease;
+}
+
+@keyframes value-bump {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); color: #22C55E; }
+}
